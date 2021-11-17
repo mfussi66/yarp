@@ -13,20 +13,28 @@
 
 using namespace yarp::os;
 
+void test_delay(double target, double limit)
+{
+    double t1 = Time::now();
+    Time::delay(target);
+    double t2 = Time::now();
+    double dt = t2 - t1 - target;
+    bool inLimits = (-limit < dt) && (dt < limit);
+    std::string s = std::string("tested delay of ") + std::to_string(target) +
+        std::string("s, delay was late(+) or early(-) by ") +
+        std::to_string((double)(dt * 1000)) +
+        std::string(" ms");
+    INFO(s);
+    printf("%s\n", s.c_str());
+    CHECK(inLimits);
+}
+
 TEST_CASE("os::TimeTest", "[yarp::os]")
 {
     SECTION("testing delay (there will be a short pause)...")
     {
-        double target = 3.0;
-        double t1 = Time::now();
-        Time::delay(target);
-        double t2 = Time::now();
-        double dt = t2-t1-target;
-        double limit = 2.0; // don't be too picky, there is a lot of undefined slop
-        bool inLimits = (-limit<dt)&&(dt<limit);
-        INFO(std::string("delay was late(+) or early(-) by ") +
-               yarp::conf::numeric::to_string((int)(dt*1000)) +
-               " ms");
-        CHECK(inLimits); // delay for 3.0 seconds
+        test_delay ( 3.000, 0.010);
+        test_delay ( 0.300, 0.010);
+        test_delay ( 0.030, 0.010);
     }
 }
